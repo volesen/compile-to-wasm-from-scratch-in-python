@@ -1,5 +1,7 @@
 # compile-to-wasm-from-scratch-in-python
 
+A toy compiler for the "Compiling to WASM from scratch" BornHack 2024 talk.
+
 ## Example
 
 ```
