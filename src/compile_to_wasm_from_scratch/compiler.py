@@ -104,6 +104,8 @@ def compile_binary_op(operator):
             return ["i32.mul"]
         case "SLASH":
             return ["i32.div_s"]
+        case "EQUALS":
+            return ["i32.eq"]
         case _:
             raise ValueError(f"Unknown binary operator: {operator}")
 

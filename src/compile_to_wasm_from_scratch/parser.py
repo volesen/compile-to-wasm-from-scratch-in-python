@@ -104,11 +104,20 @@ class CTWFSParser(Parser):
         return self.sequence()
 
     def sequence(self):
-        expr = self.term()
+        expr = self.comparison()
 
         while self.match("SEMICOLON"):
-            right = self.term()
+            right = self.expression()
             expr = ast.Sequence(expr, right)
+
+        return expr
+
+    def comparison(self):
+        expr = self.term()
+
+        while op := self.match("EQUALS"):
+            right = self.term()
+            expr = ast.BinaryOp(op.type, expr, right)
 
         return expr
 

@@ -21,6 +21,8 @@ def main() -> int:
         program = parser.parse()
     except ParserError as e:
         print(e)
+        print(f"{parser.tokens[parser.current:]=}")
+        raise
         return 1
 
     wat = compile_prog(program)
