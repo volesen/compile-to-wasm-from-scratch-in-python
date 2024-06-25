@@ -1,0 +1,8 @@
+fn main() =
+    sum_to(10)
+
+fn sum_to(n) =
+    if n then
+        n + sum_to(n - 1)
+    else
+        0
