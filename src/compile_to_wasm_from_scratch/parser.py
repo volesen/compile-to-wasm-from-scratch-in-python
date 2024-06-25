@@ -21,7 +21,10 @@ class Parser:
         Consume the current token if it is of the given type, otherwise raise an error.
         """
 
-        token = self.tokens[self.current]
+        try:
+            token = self.tokens[self.current]
+        except IndexError:
+            raise ParserError(f"Unexpected end of input, expected {token_type}")
 
         if token.type != token_type:
             raise ParserError(
@@ -56,11 +59,12 @@ class CTWFSParser(Parser):
         return ast.Program(decls)
 
     def function_declaration(self):
-        self.consume("FN", "Expected 'fn' keyword")
+        self.consume("FN", "Expected 'fn' keyword to start function declaration")
         name = self.consume("IDENT", "Expected function name")
         parameters = self.parameter_list()
-        self.consume("LBRACE", "Expected '{' before function body")
-        body = self.finish_block_expression()
+        self.consume("EQUALS", "Expected '=' after parameter list")
+        body = self.expression()
+
         return ast.FunctionDeclaration(name.value, parameters, body)
 
     def parameter_list(self):
@@ -68,10 +72,7 @@ class CTWFSParser(Parser):
 
         self.consume("LPAREN", "Expected '(' after function name")
 
-        while not self.is_at_end():
-            if self.match("RPAREN"):
-                break
-
+        while not self.is_at_end() and not self.match("RPAREN"):
             param = self.consume("IDENT", "Expected parameter name")
             params.append(param.value)
 
@@ -82,7 +83,34 @@ class CTWFSParser(Parser):
         return params
 
     def expression(self):
-        return self.term()
+        if self.match("IF"):
+            condition = self.expression()
+            self.consume("THEN", "Expected 'then' keyword after condition")
+            then_expr = self.expression()
+            self.consume("ELSE", "Expected 'else' keyword after then expression")
+            else_expr = self.expression()
+
+            return ast.If(condition, then_expr, else_expr)
+
+        if self.match("LET"):
+            name = self.consume("IDENT", "Expected variable name")
+            self.consume("EQUALS", "Expected '=' after variable name")
+            value = self.expression()
+            self.consume("IN", "Expected 'in' after expression")
+            expr = self.expression()
+
+            return ast.Let(name.value, value, expr)
+
+        return self.sequence()
+
+    def sequence(self):
+        expr = self.term()
+
+        while self.match("SEMICOLON"):
+            right = self.term()
+            expr = ast.Sequence(expr, right)
+
+        return expr
 
     def term(self):
         expr = self.factor()
@@ -115,12 +143,6 @@ class CTWFSParser(Parser):
             self.consume("RPAREN", "Expected ')' after expression")
             return expr
 
-        elif self.match("LBRACE"):
-            return self.finish_block_expression()
-
-        elif self.match("IF"):
-            return self.finish_if_expression()
-
         elif name := self.match("IDENT"):
             if self.match("LPAREN"):
                 args = self.finish_argument_list()
@@ -132,49 +154,6 @@ class CTWFSParser(Parser):
             return ast.Number(number.value)
 
         raise ParserError("Expected expression")
-
-    def finish_block_expression(self):
-        stmts = []
-        expr = None
-
-        while not self.is_at_end() and not self.match("RBRACE"):
-            if self.match("LET"):
-                stmt = self.finish_let_statement()
-                stmts.append(stmt)
-                continue
-
-            # Either an expression statement or the return expression
-            expr = self.expression()
-
-            if self.match("SEMICOLON"):
-                stmt = ast.ExpressionStatement(expr)
-                stmts.append(stmt)
-                expr = None
-                continue
-
-        if not expr:
-            raise ParserError(
-                "Expected a last expression in block. Maybe you added a semicolon after the last expression?"
-            )
-
-        return ast.Block(stmts, expr)
-
-    def finish_let_statement(self):
-        name = self.consume("IDENT", "Expected variable name")
-        self.consume("EQUALS", "Expected '=' after variable name")
-        value = self.expression()
-        self.consume("SEMICOLON", "Expected ';' after expression")
-        return ast.Let(name.value, value)
-
-    def finish_if_expression(self):
-        condition = self.expression()
-        self.consume("LBRACE", "Expected '{' after if condition")
-        then_block = self.finish_block_expression()
-        self.consume("ELSE", "Expected 'else' keyword after then block")
-        self.consume("LBRACE", "Expected '{' after else keyword")
-        else_block = self.finish_block_expression()
-
-        return ast.If(condition, then_block, else_block)
 
     def finish_argument_list(self):
         args = []

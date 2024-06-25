@@ -26,15 +26,15 @@ scanner = re.Scanner(
         # Skip newlines
         (r"\n+", skip),
         # Keywords
-        (r"let", make_rule("LET")),
         (r"fn", make_rule("FN")),
+        (r"let", make_rule("LET")),
+        (r"in", make_rule("IN")),
         (r"if", make_rule("IF")),
+        (r"then", make_rule("THEN")),
         (r"else", make_rule("ELSE")),
         # Punctuation
         (r"\(", make_rule("LPAREN")),
         (r"\)", make_rule("RPAREN")),
-        (r"\{", make_rule("LBRACE")),
-        (r"\}", make_rule("RBRACE")),
         (r"\,", make_rule("COMMA")),
         (r"\;", make_rule("SEMICOLON")),
         # Operators

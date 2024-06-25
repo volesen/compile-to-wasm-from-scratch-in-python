@@ -1,13 +1,7 @@
 import argparse
 from .scanner import scanner
 from .parser import CTWFSParser, ParserError
-from .compiler import compile_prog
-
-
-def serialize_sexpr(sexpr):
-    if isinstance(sexpr, list):
-        return f"({' '.join(serialize_sexpr(x) for x in sexpr)})"
-    return str(sexpr)
+from .compiler import compile_prog, serialize_sexpr
 
 
 def main() -> int:
@@ -25,7 +19,6 @@ def main() -> int:
 
     try:
         program = parser.parse()
-        # print(program)
     except ParserError as e:
         print(e)
         return 1

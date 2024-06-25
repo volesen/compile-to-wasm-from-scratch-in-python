@@ -9,23 +9,8 @@ class Expression(Node):
     pass
 
 
-class Statement(Node):
-    pass
-
-
 class Declaration(Node):
     pass
-
-
-@dataclass
-class Let(Statement):
-    name: str
-    value: Expression
-
-
-@dataclass
-class ExpressionStatement(Statement):
-    expression: Expression
 
 
 @dataclass
@@ -52,16 +37,17 @@ class BinaryOp(Expression):
 
 
 @dataclass
-class Block(Expression):
-    statements: list[Statement]
-    expression: Expression
+class Let(Expression):
+    name: str
+    value: Expression
+    body: Expression
 
 
 @dataclass
 class If(Expression):
     condition: Expression
-    then_block: Block
-    else_block: Block
+    then_branch: Expression
+    else_branch: Expression
 
 
 @dataclass
@@ -71,10 +57,16 @@ class Call(Expression):
 
 
 @dataclass
+class Sequence(Expression):
+    first: Expression
+    second: Expression
+
+
+@dataclass
 class FunctionDeclaration(Declaration):
     name: str
     parameters: list[str]
-    body: Block
+    body: Expression
 
 
 @dataclass
