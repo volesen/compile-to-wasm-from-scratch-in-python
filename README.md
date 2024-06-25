@@ -1,5 +1,19 @@
 # compile-to-wasm-from-scratch-in-python
 
+## Example
+
+```
+fn main() =
+  sum_to(10)
+
+fn sum_to(n) =
+  if n
+    then n + sum_to(n - 1)
+    else 0
+```
+
+##
+
 ## Grammar
 
 ```bnf
@@ -7,22 +21,19 @@
 
 <declaration> ::= <function-declaration>
 
-<function-declaration> ::= "fn" <identifier> "(" <parameter-list> ")" <expression-block>
+<function-declaration> ::= "fn" <identifier> "(" <parameter-list> ")" "=" <expression>
 <parameter-list> ::= <identifier> ("," <identifier>)*
 
-<statement> ::= <let-statement> | <expression-statement>
-<let-statement> ::= "let" <identifier> "=" <expression> ";"
-<expression-statement> ::= <expression> ";"
-
-<expression> ::= <term>
+<expression> ::= <if-expression> | <let-expression> | <sequence-expression>
+<if-expression> ::= "if" <expression> "then" <expression> "else" <expression>
+<let-expression> ::= "let" <identifier> "=" <expression> "in" <expression>
+<sequence-expression> ::= <term> ( ";" <expression> )?
 <term> ::= <factor> ( ("+" | "-") <factor> )*
 <factor> ::= <unary> ( ("*" | "/") <unary> )*
 <unary> ::= "-" <unary> | <call>
 <call> ::= <identifier> "(" <argument-list> ")" | <primary>
 <argument-list> ::= <expression> ("," <expression>)*
-<primary> ::= <number> | <identifier> | "(" <expression> ")" | <if-expression> | <expression-block>
-<if-expression> ::= "if" <expression> "then" <expression-block> "else" <expression-block>
-<expression-block> ::= "{" <statement>* <expression> "}"
+<primary> ::= <number> | <identifier> | "(" <expression> ")"
 
 <identifier> ::= <letter> (<letter> | <digit>)*
 <number> ::= <digit>+
