@@ -7,12 +7,19 @@ fn main() =
   sum_to(10)
 
 fn sum_to(n) =
-  if n
-    then n + sum_to(n - 1)
-    else 0
+  if n = 0
+    then 0
+    else n + sum_to(n - 1)
 ```
 
-##
+## Quick Start
+
+You need to have [`rye`](https://rye.astral.sh) and [Webassembly Binary Toolkit (`wabt`)] installed.
+
+```sh
+rye sync
+sh run.sh examples/sum_to.ctwfs
+```
 
 ## Grammar
 
@@ -27,7 +34,8 @@ fn sum_to(n) =
 <expression> ::= <if-expression> | <let-expression> | <sequence-expression>
 <if-expression> ::= "if" <expression> "then" <expression> "else" <expression>
 <let-expression> ::= "let" <identifier> "=" <expression> "in" <expression>
-<sequence-expression> ::= <term> ( ";" <expression> )?
+<sequence-expression> ::= <comparison> ( ";" <expression> )?
+<comparison> ::= <sum> ( ( "=" ) <sum> )*
 <term> ::= <factor> ( ("+" | "-") <factor> )*
 <factor> ::= <unary> ( ("*" | "/") <unary> )*
 <unary> ::= "-" <unary> | <call>
