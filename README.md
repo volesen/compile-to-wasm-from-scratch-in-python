@@ -16,7 +16,7 @@ fn sum_to(n) =
 
 ## Quick Start
 
-You need to have [`rye`](https://rye.astral.sh) and [Webassembly Binary Toolkit (`wabt`)] installed.
+You need to have [`rye`](https://rye.astral.sh) and [Webassembly Binary Toolkit (`wabt`)](https://github.com/WebAssembly/wabt) installed.
 
 ```sh
 rye sync
