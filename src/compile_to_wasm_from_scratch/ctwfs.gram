@@ -1,0 +1,59 @@
+@subheader '''
+import traceback
+from typing import Generator
+from pegen.tokenizer import Tokenizer
+import compile_to_wasm_from_scratch.ast as ast
+'''
+
+@trailer '''
+def filter_tokens(
+    it: Generator[tokenize.TokenInfo, None, None],
+) -> Generator[tokenize.TokenInfo, None, None]:
+    # Out of laziness, we reuse the Python tokenizer,
+    # however, we do not need indentation information.
+    for tok in it:
+        if tok.type not in {tokenize.NEWLINE, tokenize.INDENT, tokenize.DEDENT}:
+            yield tok
+
+def parse(file):
+    tokengen = filter_tokens(tokenize.generate_tokens(file.readline))
+    tokenizer = Tokenizer(tokengen)
+    parser = GeneratedParser(tokenizer)
+
+    tree = parser.start()
+
+    if not tree:
+        err = parser.make_syntax_error(file.name)
+        traceback.print_exception(err.__class__, err, None)
+
+    return tree
+'''
+
+start: decls=decl* ENDMARKER { ast.Program(decls or []) }
+
+decl: 'fn' NAME '(' params = params? ')' '=' expr { ast.FunctionDeclaration(name.string, params or [], expr) }
+
+params: NAME names=(',' NAME)* { [name.string] + names }
+
+expr: ( 'if' condition=expr 'then' then_branch=expr 'else' else_branch=expr { ast.If(condition, then_branch, else_branch) }
+      | 'let' NAME '=' value=expr 'in' body=expr { ast.Let(name.string, value, body) }
+      | comparison ';' expr { ast.Sequence(comparison, expr) }
+      | comparison )
+
+comparison: ( term '=' comparison { ast.BinaryOp("EQUALS", term, comparison) }
+            | term )
+
+term: ( factor '+' term { ast.BinaryOp("PLUS", factor, term) }
+        | factor '-' term { ast.BinaryOp("MINUS", factor, term) }
+        | factor )
+
+factor: ( primary '*' factor { ast.BinaryOp("STAR", primary, factor) }
+        | primary '/' factor { ast.BinaryOp("SLASH", primary, factor) }
+        | primary )
+
+primary: ( NUMBER { ast.Number(int(number.string)) }
+         | NAME '(' args = args? ')' { ast.Call(name.string, args or []) }
+         | NAME { ast.Variable(name.string) }
+         | '(' expr ')' { expr } )
+
+args: expr exprs=(',' expr)* { [expr] + exprs }
