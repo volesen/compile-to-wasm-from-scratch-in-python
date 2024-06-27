@@ -9,3 +9,5 @@
 #   generate-hashes: false
 
 -e file:.
+pegen==0.3.0
+    # via compile-to-wasm-from-scratch
