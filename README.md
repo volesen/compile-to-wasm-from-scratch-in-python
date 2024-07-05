@@ -6,12 +6,12 @@ A toy compiler for the "Compiling to WASM from scratch" BornHack 2024 talk.
 
 ```
 fn main() =
-  sum_to(10)
+    sum_to(10)
 
 fn sum_to(n) =
-  if n = 0
-    then 0
-    else n + sum_to(n - 1)
+    if n = 0
+        then 0
+        else n + sum_to(n - 1)
 ```
 
 ## Quick Start
@@ -20,6 +20,9 @@ You need to have [`rye`](https://rye.astral.sh) and [Webassembly Binary Toolkit 
 
 ```sh
 rye sync
+
+rye run generate
+
 sh run.sh examples/sum_to.ctwfs
 ```
 
