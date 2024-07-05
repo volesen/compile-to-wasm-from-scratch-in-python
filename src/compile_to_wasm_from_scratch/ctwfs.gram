@@ -6,18 +6,17 @@ import compile_to_wasm_from_scratch.ast as ast
 '''
 
 @trailer '''
-def filter_tokens(
-    it: Generator[tokenize.TokenInfo, None, None],
-) -> Generator[tokenize.TokenInfo, None, None]:
-    # Out of laziness, we reuse the Python tokenizer,
-    # however, we do not need indentation information.
-    for tok in it:
-        if tok.type not in {tokenize.NEWLINE, tokenize.INDENT, tokenize.DEDENT}:
-            yield tok
+import tokenize
 
-def parse(file):
-    tokengen = filter_tokens(tokenize.generate_tokens(file.readline))
-    tokenizer = Tokenizer(tokengen)
+def parse(source_file):
+    tokens = tokenize.generate_tokens(source_file.readline)
+    # We reuse Python's tokenizer, but remove indentation tokens
+    filtered_tokens = (
+        token
+        for token in tokens
+        if token.type not in {tokenize.NEWLINE, tokenize.INDENT, tokenize.DEDENT}
+    )
+    tokenizer = Tokenizer(filtered_tokens)
     parser = GeneratedParser(tokenizer)
 
     tree = parser.start()
@@ -40,15 +39,13 @@ expr: ( 'if' condition=expr 'then' then_branch=expr 'else' else_branch=expr { as
       | comparison ';' expr { ast.Sequence(comparison, expr) }
       | comparison )
 
-comparison: ( term '=' comparison { ast.BinaryOp("EQUALS", term, comparison) }
+comparison: ( term op='=' comparison { ast.BinaryOp(op.string, term, comparison) }
             | term )
 
-term: ( factor '+' term { ast.BinaryOp("PLUS", factor, term) }
-        | factor '-' term { ast.BinaryOp("MINUS", factor, term) }
+term: ( factor op=('+' | '-') term { ast.BinaryOp(op.string, factor, term) }
         | factor )
 
-factor: ( primary '*' factor { ast.BinaryOp("STAR", primary, factor) }
-        | primary '/' factor { ast.BinaryOp("SLASH", primary, factor) }
+factor: ( primary op=('*' | '/') factor { ast.BinaryOp(op.string, primary, factor) }
         | primary )
 
 primary: ( NUMBER { ast.Number(int(number.string)) }

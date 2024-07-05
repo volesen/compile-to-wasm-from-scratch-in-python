@@ -96,15 +96,15 @@ def compile_unary_op(operator):
 
 def compile_binary_op(operator):
     match operator:
-        case "PLUS":
+        case "+":
             return ["i32.add"]
-        case "MINUS":
+        case "-":
             return ["i32.sub"]
-        case "STAR":
+        case "*":
             return ["i32.mul"]
-        case "SLASH":
+        case "/":
             return ["i32.div_s"]
-        case "EQUALS":
+        case "=":
             return ["i32.eq"]
         case _:
             raise ValueError(f"Unknown binary operator: {operator}")
