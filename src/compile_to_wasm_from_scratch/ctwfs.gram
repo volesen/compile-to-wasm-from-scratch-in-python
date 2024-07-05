@@ -45,8 +45,11 @@ comparison: ( term op='=' comparison { ast.BinaryOp(op.string, term, comparison)
 term: ( factor op=('+' | '-') term { ast.BinaryOp(op.string, factor, term) }
         | factor )
 
-factor: ( primary op=('*' | '/') factor { ast.BinaryOp(op.string, primary, factor) }
-        | primary )
+factor: ( unary op=('*' | '/') factor { ast.BinaryOp(op.string, unary, factor) }
+        | unary )
+
+unary: ( op='-' unary { ast.UnaryOp(op.string, unary) }
+       | primary )
 
 primary: ( NUMBER { ast.Number(int(number.string)) }
          | NAME '(' args = args? ')' { ast.Call(name.string, args or []) }

@@ -37,8 +37,8 @@ def compile_expr(ftab, vtab, expr):
         case ast.Variable(name):
             return ["local.get", vtab[name]]
 
-        case ast.UnaryOp(operator, operand):
-            return compile_expr(ftab, vtab, operand) + compile_unary_op(operator)
+        case ast.UnaryOp("-", operand):
+            return ["i32.const", 0, *compile_expr(ftab, vtab, operand), "i32.sub"]
 
         case ast.BinaryOp(operator, left, right):
             return (
@@ -84,14 +84,6 @@ def compile_expr(ftab, vtab, expr):
 
         case _:
             raise ValueError(f"Unknown expression type: {expr}")
-
-
-def compile_unary_op(operator):
-    match operator:
-        case "MINUS":
-            return ["i32.neg"]
-        case _:
-            raise ValueError(f"Unknown unary operator: {operator}")
 
 
 def compile_binary_op(operator):
